@@ -81,7 +81,7 @@ def parse_message(msg):
     if len(msg) >= 1:
         msg = msg.split(' ')
         options = {'!test': command_test,
-                   '!asdf:': command_asdf}
+                   '!asdf': command_asdf}
         options[msg[0]]()
 # --------------------------------------------- End Helper Functions -----------------------------------------------
 
