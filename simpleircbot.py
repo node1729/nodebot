@@ -82,7 +82,8 @@ def parse_message(msg):
         msg = msg.split(' ')
         options = {'!test': command_test,
                    '!asdf': command_asdf}
-        options[msg[0]]()
+        if msg[0] in options:
+            options[msg[0]]()
 # --------------------------------------------- End Helper Functions -----------------------------------------------
 
 
