@@ -11,16 +11,12 @@ import nodebot_api
 
 non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 
-# Intended for stream usage, feel free to modify and use as you see fit
-# remove commands you do not use and add text files you may need to
-# prevent crashes
-
 # --------------------------------------------- Start Settings -----------------------------------------------------
 HOST = "irc.twitch.tv"                          # Hostname of the IRC-Server in this case twitch's
 PORT = 6667                                     # Default IRC-Port
 CHAN = "#node1729"                              # Channelname = #{Nickname}
 NICK = "nodebot1729"                            # Nickname = Twitch username
-PASS = "oauth:"                                 # www.twitchapps.com/tmi/ will help to retrieve the required authkey
+PASS = "oauth:"   # www.twitchapps.com/tmi/ will help to retrieve the required authkey
 # --------------------------------------------- End Settings -------------------------------------------------------
 
 try:
@@ -73,6 +69,18 @@ def command_pikmin():
     #print(pikmin_total_list)
     pikmin = random.choice(pikmin_total_list)
     send_message(CHAN, sender + " lost " + str(random.randrange(1,100)) + " Pikmin to " + pikmin)
+
+def command_fullbutton():
+    buttons = open("E:/RetroSpy/gcn_buttons.txt")
+    buttons_list = buttons.readlines()
+    outstr = ""
+    for item in buttons_list:
+        item = item[:-1]
+        outstr += item + ", "
+        print(item)
+    outstr = outstr[:-2]
+    send_message(CHAN, outstr)
+    buttons.close()
 
 def command_commands():
     commands = options
@@ -132,7 +140,7 @@ def command_isprime():
             if not isdone:
                 send_message(CHAN, str(primenum) + " is prime")
     else:
-        send_message(CHAN, "NaN")
+        send_message(CHAN, "null")
 
 
 def command_fact():
@@ -162,6 +170,7 @@ def command_get_user_id():
     user = message[len("!getuserid "):]
     if not user:
         user = sender
+
     output = nodebot_api.get_user_ID(username=user)
     if not output:
         send_message(CHAN, "Invalid username supplied")
@@ -184,9 +193,57 @@ def command_followage():
     if not followage:
         outstr = "User either doesn't follow channel or doesn't exist"
     else:
-        outstr = sender + " has been following " + channel + " for " + followage.years + "Y, " + followage.months + "M, "
-        outstr = outstr + followage.days + "D, " + followage.hours + "H, " + followage.minutes + "m, " + followage.seconds + "s"
+        outstr = sender + " has been following " + channel + " for "
+        if int(followage.years):
+            outstr += followage.years + "Y, "
+        if int(followage.months):
+            outstr += followage.months + "M, "
+        if int(followage.days):
+            outstr += followage.days + "D, "
+        if int(followage.hours):
+            outstr += followage.hours + "H, "
+        if int(followage.minutes):
+            outstr += followage.minutes + "m, "
+        if int(followage.seconds):
+            outstr += followage.seconds + "s"
+
     send_message(CHAN, outstr)
+
+def command_uptime():
+    channel = message[len("!uptime "):-1]
+    print(channel)
+    if not channel:
+        channel = CHAN[1:]
+    stream_uptime = nodebot_api.uptime(channel)
+    if not stream_uptime:
+        outstr = "User either is not live or doesn't exist"
+    else:
+        outstr = channel + " has been live for " 
+        if int(stream_uptime.years):
+            outstr += stream_uptime.years + "Y, "
+        if int(stream_uptime.months):
+            outstr += stream_uptime.months + "M, "
+        if int(stream_uptime.days):  
+            outstr += stream_uptime.days + "D, "  
+        if int(stream_uptime.hours):
+            outstr += stream_uptime.hours + "H, "
+        if int(stream_uptime.minutes):
+            outstr += stream_uptime.minutes + "m, "
+        if int(stream_uptime.seconds): 
+            outstr += stream_uptime.seconds + "s"
+    send_message(CHAN, outstr)
+
+def command_title():
+    channel = message[len("!title "):-1]
+    if not channel:
+        channel = CHAN[1:]
+    stream_title = nodebot_api.title(channel)
+    if not stream_title:
+        outstr = "Channel either not live or doesn't exist"
+    else:
+        outstr = stream_title
+    send_message(CHAN, outstr)
+
 # --------------------------------------------- End Commands -------------------------------------------------------
 
 # --------------------------------------------- Start Helper Functions ---------------------------------------------
@@ -226,7 +283,9 @@ def parse_message(msg):
                    "!isprime": command_isprime,
                    "!commands": command_commands,
                    "!getuserid": command_get_user_id,
-                   "!followage": command_followage
+                   "!followage": command_followage,
+                   "!uptime":command_uptime,
+                   "!title": command_title
                    }
         if msg[0] in options:
             options[msg[0]]()
